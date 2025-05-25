@@ -1,105 +1,105 @@
 import mysql.connector
 from datetime import datetime
 
-# Connect to the MySQL database
+# connect to database
 conn = mysql.connector.connect(
     host='localhost',
-    user='your_username',   # Replace with your MySQL username
-    password='your_password',  # Replace with your MySQL password
+    user='Viswanath',     
+    password='21121A0253@eee', 
     database='library_management'
 )
-cursor = conn.cursor()
 
-# Function to add a new book to the library
+cur = conn.cursor()
+
+# Add new book
 def add_book(title, author):
-    cursor.execute('INSERT INTO books (title, author) VALUES (%s, %s)', (title, author))
+    sql = "INSERT INTO books (title, author) VALUES (%s, %s)"
+    cur.execute(sql, (title, author))
     conn.commit()
-    print(f"Book '{title}' by {author} added to the library.")
+    print("Book added!")
 
-# Function to view all available books
-def view_available_books():
-    cursor.execute('SELECT * FROM books WHERE available = TRUE')
-    books = cursor.fetchall()
-    print("Available books:")
-    for book in books:
-        print(f"{book[0]} - {book[1]} by {book[2]}")
+# Show only available books
+def view_available():
+    cur.execute("SELECT * FROM books WHERE available = TRUE")
+    data = cur.fetchall()
+    for row in data:
+        print(f"{row[0]}. {row[1]} by {row[2]}")
 
-# Function to check out a book
-def checkout_book(book_id, user):
-    cursor.execute('SELECT available FROM books WHERE book_id = %s', (book_id,))
-    book = cursor.fetchone()
-    
-    if book and book[0]:  # Check if the book is available
-        checkout_date = datetime.now()
-        cursor.execute('UPDATE books SET available = FALSE WHERE book_id = %s', (book_id,))
-        cursor.execute('INSERT INTO transactions (book_id, user, checkout_date, status) VALUES (%s, %s, %s, %s)', 
-                       (book_id, user, checkout_date, 'checked out'))
+# Checkout a book
+def checkout(book_id, user):
+    cur.execute("SELECT available FROM books WHERE book_id = %s", (book_id,))
+    available = cur.fetchone()
+    if available and available[0]:
+        time = datetime.now()
+        cur.execute("UPDATE books SET available = FALSE WHERE book_id = %s", (book_id,))
+        cur.execute("INSERT INTO transactions (book_id, user, checkout_date, status) VALUES (%s, %s, %s, 'checked out')", (book_id, user, time))
         conn.commit()
-        print(f"Book {book_id} has been checked out by {user}.")
+        print("Book checked out.")
     else:
-        print("Book is not available for checkout.")
+        print("Book not available.")
 
-# Function to return a book
+# Return a book
 def return_book(book_id, user):
-    cursor.execute('SELECT * FROM transactions WHERE book_id = %s AND user = %s AND status = "checked out"', (book_id, user))
-    transaction = cursor.fetchone()
-    
-    if transaction:
-        return_date = datetime.now()
-        cursor.execute('UPDATE books SET available = TRUE WHERE book_id = %s', (book_id,))
-        cursor.execute('UPDATE transactions SET return_date = %s, status = "returned" WHERE book_id = %s AND user = %s',
-                       (return_date, book_id, user))
+    cur.execute("SELECT * FROM transactions WHERE book_id = %s AND user = %s AND status = 'checked out'", (book_id, user))
+    result = cur.fetchone()
+    if result:
+        time = datetime.now()
+        cur.execute("UPDATE books SET available = TRUE WHERE book_id = %s", (book_id,))
+        cur.execute("UPDATE transactions SET return_date = %s, status = 'returned' WHERE book_id = %s AND user = %s", (time, book_id, user))
         conn.commit()
-        print(f"Book {book_id} returned by {user}.")
+        print("Book returned.")
     else:
-        print(f"No checkout record found for book {book_id} and user {user}.")
+        print("No record found for this return.")
 
-# Function to view all books and their status
-def view_all_books():
-    cursor.execute('SELECT * FROM books')
-    books = cursor.fetchall()
-    
-    print("All books in the library:")
-    for book in books:
-        status = "Available" if book[3] else "Checked Out"
-        print(f"{book[0]} - {book[1]} by {book[2]} - {status}")
+# Show all books
+def view_all():
+    cur.execute("SELECT * FROM books")
+    data = cur.fetchall()
+    for row in data:
+        status = "Available" if row[3] else "Checked Out"
+        print(f"{row[0]}. {row[1]} by {row[2]} - {status}")
 
-# Example Usage
+# Main program
 def main():
     while True:
-        print("\n--- Library Management System ---")
-        print("1. Add a new book")
-        print("2. View available books")
-        print("3. Check out a book")
-        print("4. Return a book")
-        print("5. View all books")
+        print("\n--- Library System ---")
+        print("1. Add Book")
+        print("2. View Available Books")
+        print("3. Checkout Book")
+        print("4. Return Book")
+        print("5. View All Books")
         print("6. Exit")
-
-        choice = input("Enter your choice: ")
         
-        if choice == '1':
-            title = input("Enter book title: ")
-            author = input("Enter author name: ")
-            add_book(title, author)
-        elif choice == '2':
-            view_available_books()
-        elif choice == '3':
-            book_id = int(input("Enter book ID to check out: "))
-            user = input("Enter your name: ")
-            checkout_book(book_id, user)
-        elif choice == '4':
-            book_id = int(input("Enter book ID to return: "))
-            user = input("Enter your name: ")
-            return_book(book_id, user)
-        elif choice == '5':
-            view_all_books()
-        elif choice == '6':
+        ch = input("Enter your choice: ")
+        
+        if ch == '1':
+            t = input("Enter title: ")
+            a = input("Enter author: ")
+            add_book(t, a)
+        elif ch == '2':
+            view_available()
+        elif ch == '3':
+            try:
+                id = int(input("Book ID: "))
+                u = input("Your name: ")
+                checkout(id, u)
+            except:
+                print("Invalid input.")
+        elif ch == '4':
+            try:
+                id = int(input("Book ID: "))
+                u = input("Your name: ")
+                return_book(id, u)
+            except:
+                print("Invalid input.")
+        elif ch == '5':
+            view_all()
+        elif ch == '6':
+            print("Exiting...")
             break
         else:
-            print("Invalid choice! Please try again.")
+            print("Wrong choice.")
 
 if __name__ == "__main__":
     main()
-
-# Close the database connection
-conn.close()
+    conn.close()

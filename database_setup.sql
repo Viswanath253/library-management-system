@@ -1,24 +1,22 @@
--- Create a new database
+-- Create database
 CREATE DATABASE library_management;
-
--- Use the created database
 USE library_management;
 
--- Create the books table
+-- Table for books
 CREATE TABLE books (
     book_id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    author VARCHAR(255) NOT NULL,
+    title VARCHAR(100),
+    author VARCHAR(100),
     available BOOLEAN DEFAULT TRUE
 );
 
--- Create the transactions table
+-- Table for transactions
 CREATE TABLE transactions (
     trans_id INT AUTO_INCREMENT PRIMARY KEY,
     book_id INT,
-    user VARCHAR(255) NOT NULL,
+    user VARCHAR(100),
     checkout_date DATETIME,
     return_date DATETIME,
     status ENUM('checked out', 'returned'),
-    FOREIGN KEY(book_id) REFERENCES books(book_id)
+    FOREIGN KEY (book_id) REFERENCES books(book_id)
 );
